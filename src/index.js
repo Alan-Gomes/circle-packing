@@ -1,4 +1,5 @@
 import p5 from 'p5';
+import 'p5/lib/addons/p5.dom';
 import Circle from './circle';
 import { SPEED } from './constants';
 
@@ -6,28 +7,31 @@ new p5(sketch => {
 
   let textGraphics;
   let text = 'escreva oq quiser';
+  let textInput;
   const points = [];
   const circles = [];
 
   sketch.setup = () => {
-    sketch.createCanvas(window.innerWidth, window.innerHeight);
-    textGraphics = sketch.createGraphics(window.innerWidth, window.innerHeight);
+    sketch.createCanvas(window.innerWidth, window.innerHeight - 50);
+    textGraphics = sketch.createGraphics(window.innerWidth, window.innerHeight - 50);
     textGraphics.background(0);
     textGraphics.textFont('monospace');
     textGraphics.textAlign(sketch.CENTER);
     textGraphics.fill(255);
+    textInput = sketch.createInput();
+    textInput.value('escreva oq quiser');
+    let delay = -1;
+    textInput.input(function() {
+      text = this.value();
+      clearTimeout(delay);
+      delay = setTimeout(() => update(), 250);
+    })
     update();
     setTimeout(() => document.querySelector('canvas').focus(), 150);
   };
 
   sketch.draw = () => {
     sketch.background(255);
-    sketch.textFont('monospace');
-    sketch.stroke(255);
-    sketch.fill(0);
-    sketch.textSize(20);
-    sketch.text(text, 5, 25);
-    sketch.text('Pressione ESC para limpar', 5, sketch.height - 10);
     circles.forEach(circle => {
       if (circle.isGrowing) {
         circle.isGrowing =
@@ -38,9 +42,9 @@ new p5(sketch => {
       circle.show(sketch);
     });
     if (points.length > 0 && sketch.frameCount % Math.ceil(5 * (1 / SPEED)) == 0) {
-      let attempts, fails = 0;
+      let attempts;
       for (let i = 0; i < 10 * SPEED; i++) {
-        for (attempts = 0; attempts < 100; attempts++) {
+        for (attempts = 0; attempts < 1000; attempts++) {
           const pos = points[Math.floor(sketch.random(0, points.length))];
           if (!circles.some(c => c.isInside(pos, sketch.dist))) {
             circles.push(new Circle(
@@ -58,17 +62,16 @@ new p5(sketch => {
           }
         }
         if (attempts === 1000) {
-          fails++;
+          points.splice(0, points.length);
+          console.log('done');
+          break;
         }
-      }
-      if (fails === 10) {
-        points.splice(0, points.length);
-        console.log("done");
       }
     }
   };
 
   const update = () => {
+    textGraphics.background(0);
     textGraphics.textSize((textGraphics.width / text.length) * 1.5);
     textGraphics.text(text, textGraphics.width / 2, textGraphics.height / 2 + (textGraphics.textSize() * 0.2));
     points.splice(0, points.length);
@@ -88,22 +91,6 @@ new p5(sketch => {
         }
       }
     };
-  }
-
-  sketch.keyTyped = () => {
-    const { key } = sketch;
-    if ((key < 'a' || key > 'z') && (key < '0' || key > '9') && key !== ' ') return;
-    textGraphics.background(0);
-    text += key;
-    update();
-  };
-
-  sketch.keyPressed = () => {
-    if (sketch.keyCode === 27) {
-      text = '';
-      points.splice(0, points.length);
-      circles.splice(0, circles.length);
-    }
   }
 
 });
