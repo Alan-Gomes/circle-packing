@@ -5,7 +5,7 @@ import { SPEED } from './constants';
 new p5(sketch => {
 
   let textGraphics;
-  let text = '';
+  let text = 'escreva oq quiser';
   const points = [];
   const circles = [];
 
@@ -16,6 +16,8 @@ new p5(sketch => {
     textGraphics.textFont('monospace');
     textGraphics.textAlign(sketch.CENTER);
     textGraphics.fill(255);
+    update();
+    setTimeout(() => document.querySelector('canvas').focus(), 150);
   };
 
   sketch.draw = () => {
@@ -66,11 +68,7 @@ new p5(sketch => {
     }
   };
 
-  sketch.keyTyped = () => {
-    const { key } = sketch;
-    if ((key < 'a' || key > 'z') && (key < '0' || key > '9') && key !== ' ') return;
-    textGraphics.background(0);
-    text += key;
+  const update = () => {
     textGraphics.textSize((textGraphics.width / text.length) * 1.5);
     textGraphics.text(text, textGraphics.width / 2, textGraphics.height / 2 + (textGraphics.textSize() * 0.2));
     points.splice(0, points.length);
@@ -89,7 +87,15 @@ new p5(sketch => {
           points.push({ x, y });
         }
       }
-    }
+    };
+  }
+
+  sketch.keyTyped = () => {
+    const { key } = sketch;
+    if ((key < 'a' || key > 'z') && (key < '0' || key > '9') && key !== ' ') return;
+    textGraphics.background(0);
+    text += key;
+    update();
   };
 
   sketch.keyPressed = () => {
